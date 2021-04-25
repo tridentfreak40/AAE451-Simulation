@@ -1,0 +1,106 @@
+<PropertyList>
+
+  <path>Engine.ac</path>
+  
+  <model>
+    <name>plume</name>
+    <path>Aircraft/F-35B-2/Models/Effects/Afterburner/AfterBurner.xml</path>
+    <offsets>
+      <x-m> 6.2</x-m>
+      <y-m>0</y-m>
+      <z-m> 6.15</z-m>
+      <pitch-deg>90</pitch-deg>
+    </offsets>
+  </model>
+
+  <animation>
+    <type>rotate</type>
+    <object-name>ReheatL</object-name>
+    <object-name>plume</object-name>
+    <object-name>NozzlePlug</object-name>
+    <object-name>NozzlePetal.009</object-name>
+    <object-name>NozzlePetal.013</object-name>
+    <object-name>NozzlePetal.014</object-name>
+    <object-name>NozzlePetal.015</object-name>
+    <object-name>NozzlePetal.016</object-name>
+    <object-name>NozzlePetal.017</object-name>
+    <object-name>NozzlePetal.018</object-name>
+    <object-name>NozzlePetal.019</object-name>
+    <object-name>NozzlePetal.020</object-name>
+    <object-name>NozzlePetal.021</object-name>
+    <object-name>NozzlePetal.022</object-name>
+    <object-name>NozzlePetal.023</object-name>
+
+    <property>/surface-positions/spoilers-pos-norm</property>
+    <interpolation>
+      <entry>
+        <ind>0.0</ind>
+        <dep>0</dep>
+      </entry>
+      <entry>
+        <ind>0.5</ind>
+        <dep>45</dep>
+      </entry>
+      <entry>
+        <ind>1.0</ind>
+        <dep>90</dep>
+      </entry>
+    </interpolation>
+    <center>
+      <x-m>4.5</x-m>
+      <y-m>0</y-m>
+      <z-m>0</z-m>
+    </center>
+    <axis>
+      <x>0</x>
+      <y>1</y>
+      <z>0</z>
+    </axis>
+  </animation>
+
+  <animation>
+    <type>rotate</type>
+    <object-name>ReheatL</object-name>
+    <object-name>FlameModel</object-name>
+    <object-name>plume</object-name>
+    <object-name>NozzlePlug</object-name>
+    <object-name>NozzlePetal.009</object-name>
+    <object-name>NozzlePetal.013</object-name>
+    <object-name>NozzlePetal.014</object-name>
+    <object-name>NozzlePetal.015</object-name>
+    <object-name>NozzlePetal.016</object-name>
+    <object-name>NozzlePetal.017</object-name>
+    <object-name>NozzlePetal.018</object-name>
+    <object-name>NozzlePetal.019</object-name>
+    <object-name>NozzlePetal.020</object-name>
+    <object-name>NozzlePetal.021</object-name>
+    <object-name>NozzlePetal.022</object-name>
+    <object-name>NozzlePetal.023</object-name>
+    <property>/surface-positions/nozzle-yaw</property>
+    <interpolation>
+      <entry>
+        <ind>-1.0</ind>
+        <dep>13</dep>
+      </entry>
+      <entry>
+        <ind>0.0</ind>
+        <dep>0</dep>
+      </entry>
+      <entry>
+        <ind>1.0</ind>
+        <dep>-13</dep>
+      </entry>
+    </interpolation>
+    <center>
+      <x-m>4.5</x-m>
+      <y-m>0</y-m>
+      <z-m>0</z-m>
+    </center>
+    <axis>
+      <x>0</x>
+      <y>0</y>
+      <z>1</z>
+    </axis>
+  </animation>
+  
+</PropertyList>

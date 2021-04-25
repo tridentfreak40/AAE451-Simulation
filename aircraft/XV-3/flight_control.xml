@@ -1,0 +1,621 @@
+<flight_control name="F-35B">
+    <!-- Declare some interface properties -->
+    <property>fcs/alpha-norm</property>
+    <property>fcs/canopy-engage</property>
+    <property>fcs/fbw-override</property>
+    <channel name="Flaps">
+      <fcs_function name="tef pos rad">
+        <function>
+          <description>none</description>
+          <sum>
+            <product>
+              <value>1</value>
+              <table>
+                <independentVar lookup="row">velocities/vc-kts</independentVar>
+                <tableData>
+                  0 0.349
+                  150 0.349
+                  200 0
+                </tableData>
+              </table>
+            </product>
+            <product>
+              <value>1</value>
+              <table>
+                <independentVar lookup="row">velocities/mach</independentVar>
+                <tableData>
+                  0 0
+                  0.85 0
+                  0.95 -0.0349 
+                </tableData>
+              </table>
+            </product>
+          </sum>
+        </function>
+      </fcs_function>
+      <aerosurface_scale name="flap pos norm">
+        <input>fcs/tef-pos-rad</input>
+        <domain>
+          <min>-0.0349</min>
+          <max>0.349</max>
+        </domain>
+        <range>
+          <min>-0.1</min>
+          <max>1</max>
+        </range>
+        <output>fcs/flap-pos-norm</output>
+      </aerosurface_scale>
+    </channel>
+    <!-- EDITED!!! -->
+
+    <!-- ROLL -->
+    <channel name="Roll">
+      <!-- Calculate the normalized roll-rate -->
+      <pure_gain name="roll rate norm">
+        <input>velocities/p-aero-rad_sec</input>
+        <gain>0.09</gain>
+      </pure_gain>
+      <!--
+      - Calculate the difference between actual roll-rate and
+      - commanded roll-rate.
+      -->
+      <summer name="roll trim error">
+        <input>fcs/aileron-cmd-norm</input>
+        <input>-fcs/roll-rate-norm</input>
+        <input>fcs/roll-trim-cmd-norm</input>
+        <clipto>
+          <min> -1 </min>
+          <max>  1 </max>
+        </clipto>
+      </summer>
+      <pure_gain name="roll p">
+        <input>fcs/roll-trim-error</input>
+        <gain>3.00</gain>
+      </pure_gain>
+      <!--
+      - Make sure the integrator is only active when the aircraft
+      - has gained some speed. This will prevent bad behaviour when the
+      - aircraft has been parked for a while.
+      -->
+      <switch name="aileron trigger">
+        <default value="1"/>
+        <test value="0">
+                    velocities/vc-kts lt 5.0
+                </test>
+      </switch>
+      <integrator name="roll i">
+        <input>fcs/roll-trim-error</input>
+        <trigger>fcs/aileron-trigger</trigger>
+        <c1>0.0005</c1>
+      </integrator>
+      <lead_lag_filter name="roll d">
+        <input>fcs/roll-trim-error</input>
+        <c1>0.00125</c1>
+        <c2>0.0</c2>
+        <c3>0.000125</c3>
+        <c4>1</c4>
+      </lead_lag_filter>
+      <summer name="roll command">
+        <input>fcs/roll-p</input>
+        <input>fcs/roll-i</input>
+        <input>fcs/roll-d</input>
+        <clipto>
+          <min>-1</min>
+          <max>1</max>
+        </clipto>
+      </summer>
+      <kinematic name="roll trim sum">
+        <input>fcs/roll-command</input>
+        <traverse>
+          <setting>
+            <position>-1</position>
+            <time>0.35</time>
+          </setting>
+          <setting>
+            <position>1</position>
+            <time>0.35</time>
+          </setting>
+        </traverse>
+        <output>fcs/roll-trim-sum</output>
+      </kinematic>
+      <aerosurface_scale name="left-aileron-pos-rad">
+        <input>fcs/roll-trim-sum</input>
+        <range>
+          <min> -0.40 </min>
+          <max>  0.40 </max>
+        </range>
+        <output>fcs/left-aileron-pos-rad</output>
+      </aerosurface_scale>
+      <aerosurface_scale name="Aileron Pos Norm">
+        <input>fcs/left-aileron-pos-rad</input>
+        <domain>
+          <min>-0.40</min>
+          <max>0.40</max>
+        </domain>
+        <range>
+          <min>-1</min>
+          <max>1</max>
+        </range>
+        <output>fcs/aileron-pos-norm</output>
+      </aerosurface_scale>
+    </channel>
+    <!-- PITCH -->
+    <channel name="Pitch">
+      <!--
+      - The F-16 has a G limit of 9G positive and 4G negative (44.44% 
+      - of 9G). This section limits the stick output to 100% up and 44%
+      - down.
+      -->
+      <summer name="elevator-cmd-limiter"> <!--Change-->
+        <input>fcs/elevator-cmd-norm</input>
+        <input>fcs/pitch-trim-cmd-norm</input>
+        <clipto>
+          <min>-1</min>
+          <max>0.44</max>
+        </clipto>
+      </summer>
+      <fcs_function name="fcs/g-load-norm">
+        <function>
+          <description>none</description>
+          <product>
+            <value>1</value>
+            <table>
+              <independentVar lookup="row">accelerations/n-pilot-z-norm</independentVar>
+              <tableData>
+                -12 0.8
+                -4 0
+                0 0
+                2.33 0
+                7 -0.8
+             </tableData>
+            </table>
+          </product>
+        </function>
+      </fcs_function>
+      <fcs_function name="fcs/alpha-limiter">
+        <function>
+          <description>none</description>
+          <product>
+            <property>aero/alpha-rad</property>
+            <value>1.0472</value>
+            <table>
+              <independentVar lookup="row">fcs/fbw-override</independentVar>
+              <tableData>
+                0 1
+                1 0
+              </tableData>
+            </table>
+          </product>
+        </function>
+      </fcs_function>
+      <summer name="g load error">
+        <input>fcs/elevator-cmd-limiter</input>
+        <input>fcs/g-load-norm</input>
+        <input>fcs/alpha-limiter</input>
+      </summer>
+      <pure_gain name="g load p">
+        <input>fcs/g-load-error</input>
+        <gain>0.66</gain>
+      </pure_gain>
+      <!--
+      - Make sure the integrator is only active when the aircraft
+      - has gained some speed. This will prevent bad behaviour when the
+      - aircraft has been parked for a while.
+      -->
+      <switch name="elevator trigger">
+        <default value="1"/>
+        <test value="0">
+                    velocities/vc-kts lt 5.0
+                </test>
+      </switch>
+      <integrator name="g load i">
+        <input>fcs/g-load-error</input>
+        <trigger>fcs/elevator-trigger</trigger>
+        <c1>0.005</c1>
+      </integrator>
+      <lead_lag_filter name="g load d">
+        <input>fcs/g-load-error</input>
+        <c1>0.000125</c1>
+        <c2>0.0</c2>
+        <c3>0.0000125</c3>
+        <c4>1</c4>
+      </lead_lag_filter>
+      <summer name="g load command">
+        <input>fcs/g-load-p</input>
+        <input>fcs/g-load-i</input>
+        <input>fcs/g-load-d</input>
+        <clipto>
+          <min>-1</min>
+          <max>1</max>
+        </clipto>
+      </summer>
+      <kinematic name="elevator position">
+        <input>fcs/g-load-command</input>
+        <traverse>
+          <setting>
+            <position>-1</position>
+            <time>0.35</time>
+          </setting>
+          <setting>
+            <position>1</position>
+            <time>0.35</time>
+          </setting>
+        </traverse>
+        <output>fcs/elevator-pos-norm</output>
+      </kinematic>
+      <aerosurface_scale name="elevator-pos-rad">
+        <input>fcs/elevator-pos-norm</input>
+        <range>
+          <min>-0.79</min>
+          <max>0.79</max>
+        </range>
+        <output>fcs/elevator-pos-rad</output>
+      </aerosurface_scale>
+    </channel>
+    <channel name="Yaw">
+      <!-- Calculate the normalized yaw-rate -->
+      <pure_gain name="yaw rate norm">
+        <input>velocities/r-aero-rad_sec</input>
+        <gain>100</gain>
+      </pure_gain>
+      <!-- Calculate the normalized yaw-load -->
+      <pure_gain name="yaw load norm">
+        <input>accelerations/n-pilot-y-norm</input>
+        <gain>0.25</gain>
+      </pure_gain>
+      <!--
+      - Calculate the difference between the current yaw-rate
+      - and the one requiested for.
+      -->
+      <summer name="yaw trim error">
+        <input>fcs/rudder-cmd-norm</input>
+        <input>fcs/yaw-rate-norm</input>
+        <input>fcs/yaw-load-norm</input>
+      </summer>
+      <!--
+      - Make sure the PID controller is only active when the aircraft
+      - has gained some speed. This will prevent bad behaviour when the
+      - aircraft has been parked for a while.
+      -->
+      <switch name="rudder pid trigger">
+        <default value="1"/>
+        <test value="0">
+                    velocities/vc-kts lt 10.0
+                </test>
+      </switch>
+      <pid name="yaw load pid">
+        <trigger>fcs/rudder-pid-trigger</trigger>
+        <input>fcs/yaw-trim-error</input>
+        <kp> 0.105500 </kp>
+        <ki> 0.000010 </ki>
+        <kd> 0.00005 </kd>
+        <clipto>
+          <min>-1</min>
+          <max>1</max>
+        </clipto>
+        <output>fcs/yaw-load-pid</output>
+      </pid>
+      <summer name="yaw scheduler">
+        <input>fcs/rudder-cmd-norm</input>
+        <input>fcs/yaw-trim-cmd-norm</input>
+        <input>fcs/yaw-load-pid</input>
+        <clipto>
+          <min>-1</min>
+          <max>1</max>
+        </clipto>
+      </summer>
+      <kinematic name="rudder position">
+        <input>fcs/yaw-scheduler</input>
+        <traverse>
+          <setting>
+            <position>-1</position>
+            <time>0.35</time>
+          </setting>
+          <setting>
+            <position>1</position>
+            <time>0.35</time>
+          </setting>
+        </traverse>
+        <output>fcs/rudder-position</output>
+      </kinematic>
+      <lag_filter name="rudder pos norm">
+        <input>-fcs/rudder-position</input>
+        <c1>10</c1>
+        <clipto>
+          <min>-1</min>
+          <max>1</max>
+        </clipto>
+        <output>fcs/rudder-pos-norm</output>
+      </lag_filter>
+      <aerosurface_scale name="Rudder Control">
+        <input>-fcs/rudder-pos-norm</input>
+        <range>
+          <min>-0.524</min>
+          <max>0.524</max>
+        </range>
+        <output>fcs/rudder-pos-rad</output>
+      </aerosurface_scale>
+      <lag_filter name="rudder-cmd-norm-filtered">
+        <input>fcs/rudder-cmd-norm</input>
+        <c1>2</c1>
+        <clipto>
+          <min>-1</min>
+          <max>1</max>
+        </clipto>
+        <output>fcs/rudder-cmd-norm-filtered</output>
+      </lag_filter>
+    </channel>
+    <channel name="Leading Edge Flap">
+      <switch name="lef pos rad">
+        <default value="0.0"/>
+        <test logic="AND" value="-0.0349">
+                    fcs/gear-wow eq 1
+                    gear/gear-pos-norm gt 0
+                </test>
+        <test logic="AND" value="0.436">
+                    gear/gear-pos-norm eq 0
+                    aero/alpha-rad gt 0.2618
+                </test>
+        <test logic="AND" value="0.262">
+                    fcs/gear-wow eq 0
+                    aero/alpha-rad gt 0.0873
+                </test>
+        <test logic="AND" value="-0.0349">
+                    velocities/mach gt 0.9
+                </test>
+      </switch>
+      <pure_gain name="slat pos norm">
+        <input>fcs/lef-pos-rad</input>
+        <gain>2.293578</gain>
+      </pure_gain>
+      <kinematic name="lef control">
+        <input>fcs/slat-pos-norm</input>
+        <traverse>
+          <setting>
+            <position>-1.0</position>
+            <time>3.0</time>
+          </setting>
+          <setting>
+            <position>1.0</position>
+            <time>3.0</time>
+          </setting>
+        </traverse>
+      </kinematic>
+      <aerosurface_scale name="lef pos deg">
+        <input>fcs/lef-control</input>
+        <domain>
+          <min>-1.0</min>
+          <max>1.0</max>
+        </domain>
+        <range>
+          <min>-25</min>
+          <max>25</max>
+        </range>
+      </aerosurface_scale>
+    </channel>
+    <channel name="Throttle">
+      <pure_gain name="throttle-pos-norm">
+        <input>fcs/throttle-cmd-norm</input>
+        <gain>1</gain>
+        <output>fcs/throttle-pos-norm</output>
+      </pure_gain>
+      <pure_gain name="throttle-pos-norm[1]">
+        <input>fcs/throttle-cmd-norm[1]</input>
+        <gain>1</gain>
+        <output>fcs/throttle-pos-norm[1]</output>
+      </pure_gain>
+      <pure_gain name="throttle-pos-norm[2]">
+        <input>fcs/throttle-cmd-norm[2]</input>
+        <gain>1</gain>
+        <output>fcs/throttle-pos-norm[2]</output>
+      </pure_gain>
+      <pure_gain name="throttle-pos-norm[3]">
+        <input>fcs/throttle-cmd-norm[3]</input>
+        <gain>1</gain>
+        <output>fcs/throttle-pos-norm[3]</output>
+      </pure_gain>
+      <pure_gain name="throttle-pos-norm[4]">
+        <input>fcs/throttle-cmd-norm[4]</input>
+        <gain>1</gain>
+        <output>fcs/throttle-pos-norm[4]</output>
+      </pure_gain>
+      <pure_gain name="throttle-pos-norm[5]">
+        <input>fcs/throttle-cmd-norm[5]</input>
+        <gain>1</gain>
+        <output>fcs/throttle-pos-norm[5]</output>
+      </pure_gain>
+      <pure_gain name="throttle-pos-norm[6]">
+        <input>fcs/throttle-cmd-norm[6]</input>
+        <gain>1</gain>
+        <output>fcs/throttle-pos-norm[6]</output>
+      </pure_gain>
+      <pure_gain name="throttle-pos-norm[7]">
+        <input>fcs/throttle-cmd-norm[7]</input>
+        <gain>1</gain>
+        <output>fcs/throttle-pos-norm[7]</output>
+      </pure_gain>
+      <pure_gain name="throttle-pos-norm[8]">
+        <input>fcs/throttle-cmd-norm[8]</input>
+        <gain>1</gain>
+        <output>fcs/throttle-pos-norm[8]</output>
+      </pure_gain>
+    </channel>
+    <!-- <channel name="Hover Pitch Control">
+      <pure_gain name="Theta Command Rad">
+        <input>fcs/pitch-trim-cmd-norm</input>
+        <gain>3.14</gain>
+      </pure_gain>
+      <summer name="Theta Error">
+        <input>fcs/theta-command-rad</input>
+        <input>-attitude/theta-rad</input>
+      </summer>
+      <pure_gain name="Pitch Proportional Control">
+        <input>fcs/theta-error</input>
+        <gain>0.00000083551</gain>
+      </pure_gain>
+      <integrator name="Pitch Integral Control">
+        <input>fcs/theta-error</input>
+        <c1>0</c1>
+      </integrator>
+      <lead_lag_filter name="Pitch Derivative Control">
+        <input>fcs/theta-error</input>
+        <c1>1.00132</c1>
+        <c2>0.0</c2>
+        <c3>1.0</c3>
+        <c4>0.2397</c4>
+      </lead_lag_filter>
+      <summer name="PID Pitch Control">
+        <input>fcs/pitch-proportional-control</input>
+        <input>fcs/pitch-integral-control</input>
+        <input>fcs/pitch-derivative-control</input>
+      </summer>
+      <switch name="Pitch AP Switch">
+        <default value="0.0"/>
+        <test value="fcs/pid-pitch-control">
+          ap/attitude_control == 1
+        </test>
+      </switch>
+      <pure_gain name="throttle-pos-norm[4]">
+        <input>fcs/pitch-ap-switch</input>
+        <gain>0.9</gain>
+        <gain>0.25</gain> 
+      </pure_gain>
+      <pure_gain name="throttle-pos-norm[5]">
+        <input>fcs/pitch-ap-switch</input>
+        <gain>0.9</gain>
+        <gain>0.25</gain> 
+      </pure_gain>
+      <pure_gain name="throttle-pos-norm[6]">
+        <input>fcs/pitch-ap-switch</input>
+        <gain>0.9</gain>
+        <gain>0.25</gain> 
+      </pure_gain>
+      <pure_gain name="throttle-pos-norm[7]">
+        <input>fcs/pitch-ap-switch</input>
+        <gain>0.9</gain>
+        <gain>0.25</gain> 
+      </pure_gain>
+      <pure_gain name="throttle-pos-norm[8]">
+        <input>fcs/pitch-ap-switch</input>
+        <gain>0.1</gain>
+      </pure_gain>
+
+    </channel> -->
+
+    <channel name="Speedbrake">
+      <!--
+      - To prevent deep stall the Flight Computer commands speedbrake
+      - deflection at high angle of attack (alpha) and low speeds. This
+      - will provide just enough pitch down moment to keep the aircraft
+      - under control.
+      -->
+      <switch name="speedbrake alpha limiter">
+        <default value="0"/>
+        <test logic="AND" value="1">
+                    aero/alpha-deg ge 53 
+                    velocities/v-fps le 18
+        fcs/fbw-override == 0
+                </test>
+      </switch>
+      <switch name="speedbrake initiate">
+        <default value="0"/>
+        <test logic="OR" value="1">
+                    fcs/speedbrake-alpha-limiter eq 1
+                    fcs/speedbrake-cmd-norm eq 1
+                </test>
+      </switch>
+      <!--
+      - Speedbrake deflection is limited to 43 degrees (instead of 60
+      - degrees) when the gear is extended to prevent physical
+      - speedbrake damage on touchdown.
+      -->
+      <scheduled_gain name="speedbrake scheduler">
+        <input>fcs/speedbrake-initiate</input>
+        <table>
+          <independentVar>gear/gear-cmd-norm</independentVar>
+          <tableData>
+            0    1.0
+            1    0.71667
+          </tableData>
+        </table>
+        <output>fcs/steer-pos-deg</output>
+      </scheduled_gain>
+      <kinematic name="Speedbrake Control">
+        <input>fcs/speedbrake-scheduler</input>
+        <traverse>
+          <setting>
+            <position>0</position>
+            <time>0</time>
+          </setting>
+          <setting>
+            <position>60</position>
+            <time>1</time>
+          </setting>
+        </traverse>
+        <output>fcs/speedbrake-pos-deg</output>
+      </kinematic>
+      <aerosurface_scale name="Speedbrake Pos Norm">
+        <input>fcs/speedbrake-control</input>
+        <domain>
+          <min>0</min>
+          <max>60</max>
+        </domain>
+        <range>
+          <min>0</min>
+          <max>1</max>
+        </range>
+        <output>fcs/speedbrake-pos-norm</output>
+      </aerosurface_scale>
+    </channel>
+    <channel name="Canopy">
+      <kinematic name="Canopy Control">
+        <input>fcs/canopy-engage</input>
+        <traverse>
+          <setting>
+            <position>0</position>
+            <time>0</time>
+          </setting>
+          <setting>
+            <position>1</position>
+            <time>10</time>
+          </setting>
+        </traverse>
+        <output>fcs/canopy-pos-norm</output>
+      </kinematic>
+    </channel>
+    <channel name="Landing Gear">
+      <switch name="gear-wow">
+        <default value="0"/>
+        <test logic="AND" value="1">
+          gear/unit[1]/WOW eq 1
+          gear/unit[2]/WOW eq 1
+        </test>
+      </switch>
+      <kinematic name="Gear Control">
+        <input>gear/gear-cmd-norm</input>
+        <traverse>
+          <setting>
+            <position>0</position>
+            <time>0</time>
+          </setting>
+          <setting>
+            <position>1</position>
+            <time>5</time>
+          </setting>
+        </traverse>
+        <output>gear/gear-pos-norm</output>
+      </kinematic>
+      <scheduled_gain name="Scheduled Steer Pos Deg">
+        <input>fcs/steer-cmd-norm</input>
+        <table>
+          <independentVar>velocities/vg-fps</independentVar>
+          <tableData>
+            10.0        80.0
+            50.0        15.0
+            150.0       2.0
+          </tableData>
+        </table>
+        <output>fcs/steer-pos-deg</output>
+      </scheduled_gain>
+    </channel>
+  </flight_control>

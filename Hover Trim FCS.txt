@@ -1,0 +1,200 @@
+    <channel name="Gear">
+      <pure_gain>
+        <input>gear/gear-cmd-norm</input>
+        <gain>1</gain>
+        <output>gear/gear-pos-norm</output>
+      </pure_gain>
+    </channel>
+
+    <channel name="Elevator">
+      <pure_gain name='fcs/elevator-to-liftfan'>
+        <input>fcs/elevator-cmd-norm</input>
+        <gain>-0.90</gain> <!-- APPLIES 0.85 TIMES THE ELEVATOR COMMAND FOR LIFTFAN-->
+      </pure_gain>
+      <pure_gain name='fcs/elevator-to-rcs'>
+        <input>fcs/elevator-cmd-norm</input>
+        <gain>-0.10</gain> <!-- APPLIES 0.15 TIMES THE ELEVATOR COMMAND FOR RCS -->
+      </pure_gain>
+    </channel>
+
+    <channel name="Left Aileron">
+      <pure_gain name='fcs/left-aileron-to-liftfan'>
+        <input>fcs/aileron-cmd-norm</input>
+        <gain>1</gain>
+      </pure_gain>
+    </channel>
+
+    <channel name="Right Aileron">
+      <pure_gain name='fcs/right-aileron-to-liftfan'>
+        <input>fcs/aileron-cmd-norm</input>
+        <gain>-1</gain>
+      </pure_gain>
+    </channel>
+
+    <channel name="Right Vane Deflection">
+      <pure_gain name='fcs/right-vane-to-liftfan'>
+        <input>fcs/rudder-cmd-norm</input>
+        <gain>0.1396263</gain> 
+      </pure_gain>
+      <summer>
+        <bias>1.57079632679</bias>
+        <clipto>
+          <min>1.43117002679</min>
+          <max>1.71042262679</max>
+        </clipto>
+      </summer>
+    </channel>
+
+    <channel name="Left Vane Deflection">
+      <pure_gain name='fcs/left-vane-to-liftfan'>
+        <input>fcs/rudder-cmd-norm</input>
+        <gain>-0.1396263</gain> 
+      </pure_gain>
+      <summer>
+        <bias>1.57079632679</bias> 
+        <clipto>
+          <min>1.43117002679</min>
+          <max>1.71042262679</max>
+        </clipto>
+      </summer>
+    </channel>
+
+    <channel name='Throttle'>
+      <pure_gain name='fcs/throttle-to-liftfan-rcs'>
+        <input>fcs/throttle-cmd-norm</input>
+        <gain>1</gain>
+      </pure_gain>
+    </channel>
+
+
+    <!-- ENGINE MIX / MAPPING TO ELEVATOR, RUDDER, AILERON -->
+      
+    <channel name='Liftfan1'>
+      <!-- <pure_gain name="propulsion/engine[4]/pitch-angle-rad">
+        <input>fcs/right-vane-to-liftfan</input>
+        <gain>1</gain>
+      </pure_gain>  -->
+      <summer>
+        <input>fcs/right-aileron-to-liftfan</input>
+        <input>fcs/elevator-to-liftfan</input>
+        <input>fcs/throttle-to-liftfan-rcs</input>
+        <output>fcs/throttle-cmd-norm[4]</output> <!-- Right Inner -->
+        <clipto>
+          <min>0</min>
+          <max>1</max>
+        </clipto>
+      </summer>
+    </channel>
+
+    <channel name='Liftfan2'>
+      <!-- <pure_gain name="propulsion/engine[5]/pitch-angle-rad">
+        <input>fcs/left-vane-to-liftfan</input>
+        <gain>1</gain>
+      </pure_gain>  -->
+      <summer>
+        <input>fcs/left-aileron-to-liftfan</input>
+        <input>fcs/elevator-to-liftfan</input>
+        <input>fcs/throttle-to-liftfan-rcs</input>
+        <output>fcs/throttle-cmd-norm[5]</output> <!-- Left Inner -->
+        <clipto>
+          <min>0</min>
+          <max>1</max>
+        </clipto>
+      </summer>
+    </channel>
+
+    <channel name='Liftfan3'>
+      <!-- <pure_gain name="propulsion/engine[6]/pitch-angle-rad">
+        <input>fcs/right-vane-to-liftfan</input>
+        <gain>1</gain>
+      </pure_gain>  -->
+      <summer>
+        <input>fcs/right-aileron-to-liftfan</input>
+        <input>fcs/elevator-to-liftfan</input>
+        <input>fcs/throttle-to-liftfan-rcs</input>
+        <output>fcs/throttle-cmd-norm[6]</output> <!-- Right Outer -->
+        <clipto>
+          <min>0</min>
+          <max>1</max>
+        </clipto>
+      </summer>
+    </channel>
+
+    <channel name='Liftfan4'>
+      <!-- <pure_gain name="propulsion/engine[7]/pitch-angle-rad">
+        <input>fcs/left-vane-to-liftfan</input>
+        <gain>1</gain>
+      </pure_gain>  -->
+      <summer>
+        <input>fcs/left-aileron-to-liftfan</input>
+        <input>fcs/elevator-to-liftfan</input>
+        <input>fcs/throttle-to-liftfan-rcs</input>
+        <output>fcs/throttle-cmd-norm[7]</output> <!-- Left Inner -->
+        <clipto>
+          <min>0</min>
+          <max>1</max>
+        </clipto>
+      </summer>
+    </channel>
+
+    <channel name='RCS'>
+      <summer>
+        <input>fcs/elevator-to-rcs</input>
+        <input>fcs/throttle-to-liftfan-rcs</input>
+        <output>fcs/throttle-cmd-norm[8]</output>
+        <clipto>
+          <min>0</min>
+          <max>1</max>
+        </clipto>
+      </summer>
+    </channel>
+
+    <!-- THROTTLE COMMANDS FILTERED FROM ELEVATOR/AILERON/RUDDER TRIM -->
+
+    <channel name="Throttle">
+      <pure_gain name="throttle-pos-norm">
+        <input>fcs/throttle-cmd-norm</input>
+        <gain>0</gain>
+        <output>fcs/throttle-pos-norm</output>
+      </pure_gain>
+      <pure_gain name="throttle-pos-norm[1]">
+        <input>fcs/throttle-cmd-norm[1]</input>
+        <gain>0</gain>
+        <output>fcs/throttle-pos-norm[1]</output>
+      </pure_gain>
+      <pure_gain name="throttle-pos-norm[2]">
+        <input>fcs/throttle-cmd-norm[2]</input>
+        <gain>0</gain>
+        <output>fcs/throttle-pos-norm[2]</output>
+      </pure_gain>
+      <pure_gain name="throttle-pos-norm[3]">
+        <input>fcs/throttle-cmd-norm[3]</input>
+        <gain>0</gain>
+        <output>fcs/throttle-pos-norm[3]</output>
+      </pure_gain>
+      <pure_gain name="throttle-pos-norm[4]">
+        <input>fcs/throttle-cmd-norm[4]</input>
+        <gain>1</gain>
+        <output>fcs/throttle-pos-norm[4]</output>
+      </pure_gain>
+      <pure_gain name="throttle-pos-norm[5]">
+        <input>fcs/throttle-cmd-norm[5]</input>
+        <gain>1</gain>
+        <output>fcs/throttle-pos-norm[5]</output>
+      </pure_gain>
+      <pure_gain name="throttle-pos-norm[6]">
+        <input>fcs/throttle-cmd-norm[6]</input>
+        <gain>1</gain>
+        <output>fcs/throttle-pos-norm[6]</output>
+      </pure_gain>
+      <pure_gain name="throttle-pos-norm[7]">
+        <input>fcs/throttle-cmd-norm[7]</input>
+        <gain>1</gain>
+        <output>fcs/throttle-pos-norm[7]</output>
+      </pure_gain>
+      <pure_gain name="throttle-pos-norm[8]">
+        <input>fcs/throttle-cmd-norm[8]</input>
+        <gain>1</gain>
+        <output>fcs/throttle-pos-norm[8]</output>
+      </pure_gain>
+    </channel>

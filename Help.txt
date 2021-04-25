@@ -1,0 +1,15 @@
+Install:
+Copy all files from github to desired location
+pip install jsbsim
+run from directory with all the files
+install flightgear through exe
+
+
+Python script like static_thrust_sim.py are run
+XV-3_thrust_test.xml or other xml define sim instructions
+    these are called by python script
+
+To start FlightGear
+fgfs --fdm=null --fg-aircraft=./aircraft --native-fdm=socket,in,60,,5550,udp --aircraft=F-35B --airport=KLAF --timeofday=noon
+
+Run JSB Sim after FlightGear is started

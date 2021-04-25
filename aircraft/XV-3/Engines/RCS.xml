@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<!--
+  File:     sidefan.xml
+  Author:   AAE 451 Team 1
+
+  Inputs:
+    name:           RCS
+    type:           turbine
+    thrust:         848 lb
+    augmented?      no
+    injected?       no
+-->
+
+<turbine_engine name="RCS">
+  <milthrust> 848.0 </milthrust>
+  <bypassratio>     0 </bypassratio>
+  <tsfc>            0.446 </tsfc>
+  <bleed>           0.02</bleed>
+  <idlen1>         30.0 </idlen1>
+  <idlen2>         60.0 </idlen2>
+  <maxn1>         100.0 </maxn1>
+  <maxn2>         100.0 </maxn2>
+  <augmented>         0 </augmented>
+  <injected>          0 </injected>
+
+  <function name="IdleThrust">
+   <table>
+    <independentVar lookup="row">velocities/mach</independentVar>
+    <independentVar lookup="column">atmosphere/density-altitude</independentVar>
+    <tableData>
+         -10000     0     10000   20000   30000   40000   50000
+     0.0  0.0     0.0     0.0     0.0     0.0     0.0     0.0
+     0.2  0.0     0.0     0.0     0.0     0.0     0.0     0.0
+     0.4  0.0     0.0     0.0     0.0     0.0     0.0     0.0
+     0.6  0.0     0.0     0.0     0.0     0.0     0.0     0.0
+     0.8  0.0     0.0     0.0     0.0     0.0     0.0     0.0
+     1.0  0.0     0.0     0.0     0.0     0.0     0.0     0.0
+    </tableData>
+   </table>
+  </function>
+
+  <function name="MilThrust">
+   <table>
+    <independentVar lookup="row">velocities/mach</independentVar>
+    <independentVar lookup="column">atmosphere/density-altitude</independentVar>
+    <tableData>
+          -10000       0   10000   20000   30000   40000   50000 	80000
+     0.0   1.0      1.0     1.0    1.0     1.0     1.0     1.0 	  1.0
+     0.2   1.0      1.0     1.0    1.0     1.0     1.0     1.0 	  1.0
+     0.4   1.0      1.0     1.0    1.0     1.0     1.0     1.0 	  1.0
+     0.6   1.0      1.0     1.0    1.0     1.0     1.0     1.0 	  1.0
+     0.8   1.0      1.0     1.0    1.0     1.0     1.0     1.0 	  1.0
+     1.0   1.0      1.0     1.0    1.0     1.0     1.0     1.0 	  1.0
+    </tableData>
+   </table>
+  </function>
+</turbine_engine>

@@ -1,0 +1,40 @@
+Control Surface Sizing
+	Rudder Size
+	Elevator Size
+	Aileron Size
+	Max Deflection angles
+Aerodynamics Run 2
+	CL vs. alpha (table)
+	Cmalpha pitch moment due to alpha (slope)
+	Delta lift due to flaps (slope of CL vs. Flap Deflections (rad))
+	Delta lift due to elevator (slope of CL vs. Elevator Deflection (rad))
+	CD0 vs. alpha (table)
+	CDi vs. CL^2 slope
+	Delta drag due to flaps (slope of CD vs. Flap Deflections) - XFLR5
+	Delta drag due to Elevator (slope of CD vs. Elevator Deflection)
+	CD from gear - estimated from Raymer
+	CD vs beta (CD versus sideslip angle - XFLR5)
+	Cy (side force) vs beta slope, Cy_beta
+	Cl (roll) vs beta slope, Clb 
+	Clp roll moment due to roll rate (slope)
+	Clr roll moment due to yaw rate (slope)
+	Clda roll moment due to aileron deflection (slope)
+	Cldr roll moment due to rudder deflection (slope)
+	Cmde pitch moment due to elevator deflection (slope)
+	Cmq pitch moment due to pitch rate (slope)
+	Cmadot pitch moment due to alpha rate (slope)
+	Cnb yaw moment due to beta (slope)
+	Cnr yaw moment due to yaw rate (slope)
+	Cndr yaw moment due to rudder (slope)
+
+Finalized Propulsion Sheet
+
+Controls
+input hover PID controllers
+input fixed wing flight controllers ez
+
+------ After all of this ------ 
+
+Program flight routine / autopilot
+
+Show ultimate modes, showing aircraft stability
